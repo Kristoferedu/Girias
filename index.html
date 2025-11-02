@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GíriaCerto! - O seu dicionário de gírias vivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <header>
+        <h1>GíriaCerto!</h1>
+        <p>O seu dicionário de gírias vivo e colaborativo</p>
+        <nav>
+            <ul>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#destaques">Destaques</a></li>
+                <li><a href="#categorias">Categorias</a></li>
+                <li><a href="#adicionar">Adicionar</a></li>
+                <li><a href="#contato">Contato</a></li>
+            </ul>
+        </nav>
+        <div class="search-container">
+            <input type="search" placeholder="Buscar gíria..." id="search-giria">
+            <button id="search-button">Buscar</button>
+        </div>
+    </header>
+
+    <div id="ads-banner">
+        PUBLICIDADE | Anúncio em destaque aqui (ex: 970x90 ou 728x90) | Apoie o GíriaCerto!
+    </div>
+
+    <div class="container">
+        <main>
+            <section id="sobre">
+                <h2>Sobre o GíriaCerto!</h2>
+                <p>O GíriaCerto! é um espaço colaborativo e dinâmico, dedicado a desvendar e celebrar as ricas expressões da língua portuguesa brasileira. Aqui, você pode explorar, compartilhar e adicionar gírias de todas as regiões e culturas do Brasil. De "massa" a "bafo", de "dar um migué" a "lacrar", nosso dicionário está sempre crescendo graças a você! 🌍✨</p>
+            </section>
+
+            <section id="destaques">
+                <h2>Gírias em Destaque 🔥</h2>
+                <div id="girias-destaque-container">
+                    </div>
+            </section>
+
+            <section id="categorias">
+                <h2>Categorias Populares</h2>
+                <ul class="category-list">
+                    <li data-category="carioca">Gírias Cariocas</li>
+                    <li data-category="paulista">Gírias Paulistas</li>
+                    <li data-category="nordeste">Gírias do Nordeste</li>
+                    <li data-category="lgbt">Gírias LGBTQIAPN+</li>
+                    <li data-category="gamer">Gírias Gamer</li>
+                    <li data-category="internet">Gírias da Internet</li>
+                    <li data-category="outras">Outras Regiões</li>
+                </ul>
+            </section>
+
+            <section id="adicionar">
+                <h2>Adicione Uma Nova Gíria!</h2>
+                <form id="add-giria-form">
+                    <label for="giria-nome">Nome da Gíria:</label>
+                    <input type="text" id="giria-nome" name="giria-nome" placeholder="Ex: 'Lacrar'" required><br>
+
+                    <label for="giria-significado">Significado:</label>
+                    <textarea id="giria-significado" name="giria-significado" placeholder="Explique o que significa..." required></textarea><br>
+
+                    <label for="giria-categoria">Categoria:</label>
+                    <select id="giria-categoria" name="giria-categoria" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="Carioca">Carioca</option>
+                        <option value="Paulista">Paulista</option>
+                        <option value="Nordeste">Nordeste</option>
+                        <option value="LGBTQIAPN+">LGBTQIAPN+</option>
+                        <option value="Gamer">Gamer</option>
+                        <option value="Internet">Internet</option>
+                        <option value="Outras">Outras</option>
+                    </select><br>
+
+                    <button type="submit">Enviar Gíria</button>
+                    <p id="form-message" style="margin-top: 15px; font-weight: 600;"></p>
+                </form>
+            </section>
+
+            <section id="contato">
+                <h2>Fale Conosco</h2>
+                <p>Tem sugestões, parcerias ou quer reportar algo? Envie um e-mail para <a href="mailto:contato@giriacerto.com"><strong>contato@giriacerto.com</strong></a> ou nos siga nas redes sociais!</p>
+                <div style="margin-top: 15px;">
+                    <a href="#" style="margin-right: 10px; color: var(--primary-color); text-decoration: none;">Facebook</a>
+                    <a href="#" style="margin-right: 10px; color: var(--primary-color); text-decoration: none;">Instagram</a>
+                    <a href="#" style="color: var(--primary-color); text-decoration: none;">Twitter</a>
+                </div>
+            </section>
+        </main>
+
+        <aside id="ads-sidebar">
+            <h3>PUBLI: Anúncios e Conteúdo Patrocinado</h3>
+            <div class="ads-slot">Anúncio 300x250 (Espaço 1)</div>
+            <div class="ads-slot">Anúncio 300x150 (Espaço 2)</div>
+            <div class="ads-slot">Conteúdo Nativo (Artigo Patrocinado)</div>
+            
+            <div class="giria-do-dia">
+                <h3>Gíria do Dia ✨</h3>
+                <p><strong>"De Boas"</strong></p>
+                <p><em>Significado: Estar tranquilo, relaxado, sem problemas ou preocupações.</em></p>
+                <p><em>Ex: "Terminei o trabalho, agora tô de boas!"</em></p>
+            </div>
+
+            <div class="giria-do-dia" style="margin-top: 20px;">
+                <h3>Você Sabia? 🤔</h3>
+                <p>A palavra "gíria" vem do francês "jargon", que por sua vez tem origem incerta, mas era usada para se referir à linguagem de um grupo específico.</p>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 GíriaCerto! - Todos os direitos reservados. | <a href="#" style="color: var(--accent-color); text-decoration: none;">Política de Privacidade</a></p>
+    </footer>
+
+    <div id="giriaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-giria-nome"></h2>
+            <p id="modal-giria-significado"></p>
+            <p><span id="modal-giria-categoria"></span></p>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script> 
+    <script src="script.js"></script> 
+</body>
+</html>
