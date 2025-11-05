@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <meta name="google-adsense-account" content="ca-pub-9630915703314494">
     <meta name="google-site-verification" content="ohdezwEoeMnmkup-ZmDfIndtQnzHbc5G23kcPnQYGmQ" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,11 +30,6 @@
             <button id="search-button">Buscar</button>
         </div>
     </header>
-
-    <div id="ads-banner">
-        PUBLICIDADE | Anúncio em destaque aqui (ex: 970x90 ou 728x90) | Apoie o GíriaCerto!
-    </div>
-
     <div class="container">
         <main>
             <section id="sobre">
@@ -97,27 +93,18 @@
             </section>
         </main>
 
-        <aside id="ads-sidebar">
-            <h3>PUBLI: Anúncios e Conteúdo Patrocinado</h3>
-            <div class="ads-slot">Anúncio 300x250 (Espaço 1)</div>
-            <div class="ads-slot">Anúncio 300x150 (Espaço 2)</div>
-            <div class="ads-slot">Conteúdo Nativo (Artigo Patrocinado)</div>
-            
+        <aside id="ads-sidebar">          
             <div class="giria-do-dia">
                 <h3>Gíria do Dia ✨</h3>
-                <p><strong>"De Boas"</strong></p>
-                <p><em>Significado: Estar tranquilo, relaxado, sem problemas ou preocupações.</em></p>
-                <p><em>Ex: "Terminei o trabalho, agora tô de boas!"</em></p>
-            </div>
-
-            <div class="giria-do-dia" style="margin-top: 20px;">
-                <h3>Você Sabia? 🤔</h3>
-                <p>A palavra "gíria" vem do francês "jargon", que por sua vez tem origem incerta, mas era usada para se referir à linguagem de um grupo específico.</p>
+                
+                <p><strong id="giria-do-dia-nome"> </strong></p>
+                
+                <p><em>Significado: <span id="giria-do-dia-significado"></span></em></p>
+                
+                <p><em>Categoria: <span id="giria-do-dia-categoria"></span></em></p>
             </div>
         </aside>
-    </div>
-
-    <footer>
+    </div> <footer>
         <p>&copy; 2025 Gíria Online! - Todos os direitos reservados. | <a href="#" style="color: var(--accent-color); text-decoration: none;">Política de Privacidade</a></p>
     </footer>
 
