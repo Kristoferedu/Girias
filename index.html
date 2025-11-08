@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-353634547"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-353634547');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gíria Online! - O seu dicionário de gírias vivo</title>
@@ -388,7 +397,7 @@
             <section id="destaques">
                 <h2>Gírias em Destaque 🔥</h2>
                 <div id="girias-destaque-container">
-                    <!-- As gírias em destaque serão carregadas aqui pelo JavaScript -->
+                    
                 </div>
             </section>
 
@@ -451,7 +460,6 @@
         <p>&copy; 2025 Gíria Online! - Todos os direitos reservados.</p>
     </footer>
 
-    <!-- Modal para exibir detalhes da gíria pesquisada -->
     <div id="giriaModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -461,14 +469,12 @@
         </div>
     </div>
     
-    <!-- Configuração do Supabase -->
     <script>
         const SUPABASE_URL = 'https://msbbyibpqfggdxqcited.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zYmJ5aWJwcWZnZ2R4cWNpdGVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMjQ2MTEsImV4cCI6MjA3NzYwMDYxMX0.oOSb6vGQ-3vMifVhJ4q9XCZ5uVoNdw0SSDqfvxEb8LU';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
     
-    <!-- Seu script principal -->
     <script src="script.js"></script>
 </body>
 </html>
