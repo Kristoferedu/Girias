@@ -1,8 +1,9 @@
+// script.js (CORRIGIDO)
+
 document.addEventListener('DOMContentLoaded', () => {
     // Verifica se o cliente Supabase foi inicializado
     if (typeof supabase === 'undefined' || !supabase.supabaseUrl) {
         console.error("Erro: O cliente Supabase não foi inicializado corretamente. Verifique a configuração.");
-        // A verificação é importante, mas o alert pode ser removido se estiver funcionando
         // alert("ERRO DE CONFIGURAÇÃO: Verifique as chaves do Supabase no arquivo supabase-config.js.");
         return;
     }
@@ -13,9 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('search-button');
     const suggestionsContainer = document.getElementById('suggestions-container');
     
-    // O formulário só existe na página principal
     const addGiriaForm = document.getElementById('add-giria-form');
-    
     const formMessage = document.getElementById('form-message');
     const categoryList = document.querySelector('.category-list');
     
@@ -108,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderGiriasPaginadas() {
-        if (!giriasDestaqueContainer) return; // Não executa se o elemento não existir
+        if (!giriasDestaqueContainer) return;
         giriasDestaqueContainer.innerHTML = '';
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
@@ -127,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderGiriasList(container, giriasList) {
-        if (!container) return; // Não executa se o container não existir
+        if (!container) return;
         container.innerHTML = '';
         if (!giriasList || giriasList.length === 0) {
             container.innerHTML = '<p>Nenhuma gíria encontrada para esta seleção.</p>';
@@ -176,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function displayTendencias() {
-        if (!tendenciasContainer) return; // Não executa na página do blog
+        if (!tendenciasContainer) return;
         const { data: tendencias, error } = await supabase
             .from('girias')
             .select('*')
@@ -219,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // CORRIGIDO: O botão de busca agora abre o modal diretamente
     const handleSearch = async () => {
         const searchTerm = searchInput.value.trim();
         if (!searchTerm) {
@@ -230,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const results = await searchGirias(searchTerm);
 
         if (results && results.length > 0) {
-            openModal(results[0]); // Abre o modal com o primeiro resultado encontrado
+            openModal(results[0]);
         } else {
             alert(`A gíria "${searchTerm}" não foi encontrada.`);
         }
@@ -243,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // CORRIGIDO: O autocomplete agora tem um visual melhor e abre o modal ao clicar
     if(searchInput) searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.trim().toLowerCase();
 
@@ -263,18 +260,16 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredGirias.forEach(giria => {
                 const item = document.createElement('div');
                 item.classList.add('suggestion-item');
-                // Novo HTML para o item da sugestão, usando as novas classes CSS
                 item.innerHTML = `
                     <strong>${giria.nome}</strong>
                     <em>${giria.significado.substring(0, 45)}${giria.significado.length > 45 ? '...' : ''}</em>
                 `;
                 
-                // CORRIGIDO: O clique agora abre o modal diretamente
                 item.addEventListener('click', () => {
-                    searchInput.value = ''; // Limpa o campo de busca
+                    searchInput.value = '';
                     suggestionsContainer.innerHTML = '';
                     suggestionsContainer.style.display = 'none';
-                    openModal(giria); // Abre o modal com a gíria clicada
+                    openModal(giria);
                 });
                 suggestionsContainer.appendChild(item);
             });
