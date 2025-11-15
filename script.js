@@ -1,4 +1,4 @@
-// script.js (VERSÃO FINAL E CORRIGIDA)
+// script.js (VERSÃO FINAL COM A CORREÇÃO DE 'codigo')
 
 document.addEventListener('DOMContentLoaded', () => {
     // Verifica se o cliente Supabase foi inicializado
@@ -143,11 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function openModal(giria) {
-        supabase.rpc('incrementar_acesso', { giria_id: giria.id }).then(({ error }) => {
+        // CORREÇÃO FINAL APLICADA AQUI
+        supabase.rpc('incrementar_acesso', { giria_id: giria.codigo }).then(({ error }) => {
             if (error) {
                 console.error('Erro ao chamar a função RPC "incrementar_acesso":', error);
             } else {
-                const cachedGiria = giriasCache.find(g => g.id === giria.id);
+                const cachedGiria = giriasCache.find(g => g.codigo === giria.codigo);
                 if (cachedGiria) cachedGiria.acessos = (cachedGiria.acessos || 0) + 1;
                 displayTendencias();
             }
