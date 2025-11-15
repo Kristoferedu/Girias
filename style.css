@@ -1,8 +1,7 @@
-/* Seu código CSS original (sem alterações) */
 :root {
-    --primary-color: #6a0572; /* Um roxo vibrante */
-    --secondary-color: #a43a8f; /* Um tom de roxo mais claro */
-    --accent-color: #ffcc00; /* Amarelo para destaques e anúncios */
+    --primary-color: #6a0572;
+    --secondary-color: #a43a8f;
+    --accent-color: #ffcc00;
     --text-color: #333;
     --light-text-color: #f8f8f8;
     --bg-light: #f4f4f4;
@@ -73,14 +72,24 @@ nav ul li a:hover {
     display: flex;
     justify-content: center;
     gap: 10px;
+    flex-wrap: wrap; 
+    position: relative; 
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%; /* Ocupa 100% do espaço disponível */
+    max-width: 350px; /* Mas não passa de 350px em telas grandes */
+    padding: 0 20px; /* Adiciona um respiro nas laterais em telas pequenas */
+    box-sizing: border-box; /* Garante que o padding não aumente o tamanho total */
 }
 
 #search-giria {
     padding: 12px 20px;
     border: none;
     border-radius: var(--border-radius);
-    width: 350px;
-    max-width: 80%;
+    width: 100%;
+    box-sizing: border-box;
     font-size: 1em;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: all var(--transition-speed);
@@ -89,6 +98,46 @@ nav ul li a:hover {
 #search-giria:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(106, 5, 114, 0.3);
+}
+
+#suggestions-container {
+    position: absolute;
+    top: 100%;
+    left: 20px; /* Alinha com o novo padding do wrapper */
+    right: 20px; /* Alinha com o novo padding do wrapper */
+    background-color: var(--card-bg);
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    z-index: 100;
+    box-shadow: var(--box-shadow);
+    display: none;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+.suggestion-item:hover {
+    background-color: var(--bg-light);
+}
+.suggestion-item strong {
+    color: var(--primary-color);
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+.suggestion-item em {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 button {
@@ -119,7 +168,10 @@ button:hover {
 
 @media (min-width: 768px) {
     .container {
-        grid-template-columns: 2fr 1fr; /* Main content and sidebar */
+        grid-template-columns: 2fr 1fr;
+    }
+    .search-wrapper {
+        padding: 0; /* Remove o padding extra em telas grandes */
     }
 }
 
@@ -139,26 +191,25 @@ h2 {
     margin-bottom: 25px;
 }
 
-#ads-banner {
-    background-color: var(--accent-color);
-    color: var(--text-color);
-    padding: 20px;
+.site-stats, .tendencias-card {
+    background-color: var(--primary-color);
+    color: var(--light-text-color);
     text-align: center;
-    margin: 30px auto;
-    max-width: 1200px;
+    padding: 20px;
     border-radius: var(--border-radius);
-    font-weight: 700;
     box-shadow: var(--box-shadow);
-    animation: pulse 2s infinite;
+    margin-bottom: 30px;
+}
+.site-stats h3 {
+    margin: 0;
+    font-size: 1.5em;
+}
+.site-stats #girias-count {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: var(--accent-color);
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.01); }
-    100% { transform: scale(1); }
-}
-
-/* Gírias em Destaque */
 .giria-card {
     background-color: var(--bg-light);
     border-left: 5px solid var(--secondary-color);
@@ -186,7 +237,29 @@ h2 {
     color: #555;
 }
 
-/* Categorias */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-controls button {
+    background-color: var(--secondary-color);
+    color: var(--light-text-color);
+}
+.pagination-controls button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+#refresh-button {
+    background: none;
+    border: 2px solid var(--accent-color);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
 .category-list {
     list-style: none;
     padding: 0;
@@ -211,7 +284,6 @@ h2 {
     transform: translateY(-2px);
 }
 
-/* Formulários */
 form label {
     display: block;
     margin-bottom: 8px;
@@ -260,36 +332,21 @@ form button[type="submit"]:hover {
     transform: translateY(-3px);
 }
 
-/* Sidebar Ads */
-#ads-sidebar h3 {
-    color: var(--secondary-color);
-    font-size: 1.4em;
-    margin-top: 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-.ads-slot {
-    background-color: var(--bg-light);
-    height: 120px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #777;
-    font-size: 0.9em;
-    border: 1px dashed #ccc;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-}
-
 .giria-do-dia {
     background-color: var(--bg-light);
     border-left: 5px solid var(--accent-color);
     padding: 15px;
     border-radius: 5px;
     margin-top: 25px;
+}
+
+.giria-do-dia h3 {
+    color: var(--secondary-color);
+    font-size: 1.4em;
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .giria-do-dia strong {
@@ -301,6 +358,7 @@ form button[type="submit"]:hover {
 .giria-do-dia p {
     font-style: italic;
     color: #444;
+    margin: 5px 0;
 }
 
 footer {
@@ -312,7 +370,6 @@ footer {
     font-size: 0.9em;
 }
 
-/* Modal para detalhes da gíria */
 .modal {
     display: none;
     position: fixed;
@@ -380,41 +437,81 @@ footer {
     border-radius: 5px;
     font-size: 0.9em;
     font-weight: 600;
+    display: inline-block;
 }
 
-/* Responsividade */
+.post-card {
+    background-color: var(--bg-light);
+    border-left: 5px solid var(--primary-color);
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 5px;
+}
+.post-card h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+}
+.post-meta {
+    font-size: 0.85em;
+    color: #777;
+    margin-bottom: 15px;
+}
+.post-card p {
+    line-height: 1.7;
+}
+.post-card a {
+    color: var(--secondary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+.post-card a:hover {
+    text-decoration: underline;
+}
+
+/* ================================== */
+/* CSS PARA RESPONSIVIDADE (CELULARES) */
+/* ================================== */
 @media (max-width: 767px) {
+    /* Diminui o tamanho das fontes principais */
     header h1 {
-        font-size: 2em;
+        font-size: 2.2em;
     }
+    h2 {
+        font-size: 1.6em;
+    }
+
+    /* Empilha o menu de navegação verticalmente */
     nav ul {
         flex-direction: column;
-        margin-top: 15px;
+        gap: 10px;
     }
-    nav ul li {
-        margin: 5px 0;
-    }
+
+    /* Empilha a busca e o botão */
     .search-container {
         flex-direction: column;
         align-items: center;
     }
-    #search-giria {
+    .search-wrapper {
+        width: 100%;
+        max-width: 90%; /* Limita para não colar nas bordas */
+        padding: 0;
+    }
+    #search-button {
         width: 90%;
+        max-width: 350px;
     }
-    button {
-        width: 90%;
-    }
-    .container {
-        grid-template-columns: 1fr;
-    }
+
+    /* Diminui os espaçamentos internos das seções */
     section, aside {
         padding: 20px;
     }
-    #ads-sidebar {
-        margin-left: 0;
-    }
+
+    /* Ajusta o conteúdo do modal para telas pequenas */
     .modal-content {
-        width: 95%;
-        padding: 20px;
+        width: 90%;
+        padding: 25px;
+    }
+    #modal-giria-nome {
+        font-size: 1.8em;
     }
 }
