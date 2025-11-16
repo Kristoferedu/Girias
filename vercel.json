@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/giria/:slug",
+      "destination": "/giria.html?slug=:slug"
+    }
+  ]
+}

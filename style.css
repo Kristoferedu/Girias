@@ -78,10 +78,10 @@ nav ul li a:hover {
 
 .search-wrapper {
     position: relative;
-    width: 100%; /* Ocupa 100% do espaço disponível */
-    max-width: 350px; /* Mas não passa de 350px em telas grandes */
-    padding: 0 20px; /* Adiciona um respiro nas laterais em telas pequenas */
-    box-sizing: border-box; /* Garante que o padding não aumente o tamanho total */
+    width: 100%;
+    max-width: 350px;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 #search-giria {
@@ -103,8 +103,8 @@ nav ul li a:hover {
 #suggestions-container {
     position: absolute;
     top: 100%;
-    left: 20px; /* Alinha com o novo padding do wrapper */
-    right: 20px; /* Alinha com o novo padding do wrapper */
+    left: 20px;
+    right: 20px;
     background-color: var(--card-bg);
     border: 1px solid #ddd;
     border-top: none;
@@ -142,7 +142,7 @@ nav ul li a:hover {
 
 button {
     background-color: var(--accent-color);
-    color: var(--text-color);
+    color: #000000; 
     border: none;
     padding: 12px 25px;
     border-radius: var(--border-radius);
@@ -171,7 +171,7 @@ button:hover {
         grid-template-columns: 2fr 1fr;
     }
     .search-wrapper {
-        padding: 0; /* Remove o padding extra em telas grandes */
+        padding: 0;
     }
 }
 
@@ -218,6 +218,9 @@ h2 {
     border-radius: 5px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    display: block; 
+    text-decoration: none; 
+    color: inherit; 
 }
 
 .giria-card:hover {
@@ -358,7 +361,6 @@ form button[type="submit"]:hover {
 .giria-do-dia p {
     font-style: italic;
     color: #444;
-    margin: 5px 0;
 }
 
 footer {
@@ -430,9 +432,10 @@ footer {
     color: #555;
     margin-bottom: 15px;
 }
+
 #modal-giria-categoria {
     background-color: var(--accent-color);
-    color: var(--text-color);
+    color: #000000;
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 0.9em;
@@ -468,11 +471,7 @@ footer {
     text-decoration: underline;
 }
 
-/* ================================== */
-/* CSS PARA RESPONSIVIDADE (CELULARES) */
-/* ================================== */
 @media (max-width: 767px) {
-    /* Diminui o tamanho das fontes principais */
     header h1 {
         font-size: 2.2em;
     }
@@ -480,20 +479,18 @@ footer {
         font-size: 1.6em;
     }
 
-    /* Empilha o menu de navegação verticalmente */
     nav ul {
         flex-direction: column;
         gap: 10px;
     }
 
-    /* Empilha a busca e o botão */
     .search-container {
         flex-direction: column;
         align-items: center;
     }
     .search-wrapper {
         width: 100%;
-        max-width: 90%; /* Limita para não colar nas bordas */
+        max-width: 90%;
         padding: 0;
     }
     #search-button {
@@ -501,12 +498,10 @@ footer {
         max-width: 350px;
     }
 
-    /* Diminui os espaçamentos internos das seções */
     section, aside {
         padding: 20px;
     }
 
-    /* Ajusta o conteúdo do modal para telas pequenas */
     .modal-content {
         width: 90%;
         padding: 25px;

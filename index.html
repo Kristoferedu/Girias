@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gíria Online! - O seu dicionário de gírias vivo</title>
     
+    <meta name="description" content="O dicionário colaborativo de gírias do Brasil. Encontre o significado, origem e contexto das expressões mais usadas na internet, games e em diferentes regiões.">
+    
+    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JvZF5SJlZfFQ.woff2" as="font" type="font/woff2" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
@@ -18,17 +21,17 @@
     </script>
 </head>
 <body>
-    <header>
-        <h1>Gíria Online!</h1>
+   <header>
+        <h1><a href="/" style="color: inherit; text-decoration: none;">Gíria Online!</a></h1>
         <p>O seu dicionário de gírias vivo e colaborativo</p>
         <nav>
             <ul>
-                <li><a href="#sobre">Sobre</a></li>
-                <li><a href="#destaques">Gírias</a></li>
-                <li><a href="#categorias">Categorias</a></li>
-                <li><a href="blog.html">Blog de Gírias</a></li> 
-                <li><a href="#adicionar">Adicionar</a></li>
-                <li><a href="#contato">Contato</a></li>
+                <li><a href="/#sobre">Sobre</a></li>
+                <li><a href="/#destaques">Gírias</a></li>
+                <li><a href="/#categorias">Categorias</a></li>
+                <li><a href="/blog.html">Blog de Gírias</a></li> 
+                <li><a href="/#adicionar">Adicionar</a></li>
+                <li><a href="/#contato">Contato</a></li>
             </ul>
         </nav>
         <div class="search-container">
@@ -38,7 +41,7 @@
             </div>
             <button id="search-button">Buscar</button>
         </div>
-    </header>
+    </header> 
 
     <div class="container">
         <main>
@@ -135,8 +138,8 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
