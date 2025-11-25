@@ -1,4 +1,4 @@
-// script.js (VERSÃO FINAL COM BUSCA REDIRECIONANDO PARA A PÁGINA DA GÍRIA)
+// script.js (VERSÃO FINAL COM REDIRECIONAMENTO CORRETO)
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof supabase === 'undefined' || !supabase.supabaseUrl) {
@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addGiriaForm = document.getElementById('add-giria-form');
     const formMessage = document.getElementById('form-message');
     const categoryList = document.querySelector('.category-list');
-    // O modal não será mais usado pela busca, mas pode ser mantido para outros usos futuros
     const giriaModal = document.getElementById('giriaModal');
     const closeButton = document.querySelector('.close-button');
     const giriaDoDiaNome = document.getElementById('giria-do-dia-nome');
@@ -113,6 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function createGiriaCard(giria, showAcessos = false) {
         const giriaCard = document.createElement('a');
         const slug = slugify(giria.nome);
+
+        // A URL gerada localmente é a "feia" para que o Live Server funcione
         giriaCard.href = `/giria.html?slug=${slug}`;
         
         giriaCard.classList.add('giria-card');
@@ -151,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGiriasList(tendenciasContainer, tendencias);
     }
     
-    // O modal não é mais a ação principal da busca, mas pode ser mantido para outros usos
+    // A função openModal fica disponível, mas não é mais usada pela busca principal
     if(closeButton) closeButton.addEventListener('click', () => giriaModal.style.display = 'none');
     window.addEventListener('click', (event) => {
         if (event.target === giriaModal) giriaModal.style.display = 'none';
@@ -167,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const results = await searchGirias(searchTerm);
         if (results && results.length > 0) {
             const giria = results[0];
-            // MUDANÇA: Em vez de abrir o modal, redireciona para a página da gíria
-            window.location.href = `/giria.html?slug=${slugify(giria.nome)}`;
+            // CORREÇÃO: Redireciona para a URL "bonita"
+            window.location.href = `/giria/${slugify(giria.nome)}`;
         } else {
             alert(`A gíria "${searchTerm}" não foi encontrada.`);
         }
@@ -187,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Usamos o cache para uma busca de autocomplete mais rápida
         const filteredGirias = giriasCache.filter(g => g.nome.toLowerCase().includes(searchTerm) || g.significado.toLowerCase().includes(searchTerm)).slice(0, 5); 
         
         suggestionsContainer.innerHTML = '';
@@ -197,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.classList.add('suggestion-item');
                 item.innerHTML = `<strong>${giria.nome}</strong><em>${giria.significado.substring(0, 45)}${giria.significado.length > 45 ? '...' : ''}</em>`;
                 item.addEventListener('click', () => {
-                    // MUDANÇA: O clique no autocomplete também redireciona
-                    window.location.href = `/giria.html?slug=${slugify(giria.nome)}`;
+                    // CORREÇÃO: O clique no autocomplete também redireciona para a URL "bonita"
+                    window.location.href = `/giria/${slugify(giria.nome)}`;
                 });
                 suggestionsContainer.appendChild(item);
             });
