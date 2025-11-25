@@ -1,10 +1,7 @@
-// script.js (VERSÃO FINAL COM REDIRECIONAMENTO CORRETO)
+// script.js - VERSÃO FINAL COM BUSCA REDIRECIONANDO PARA A PÁGINA DA GÍRIA
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof supabase === 'undefined' || !supabase.supabaseUrl) {
-        console.error("Erro: O cliente Supabase não foi inicializado corretamente.");
-        return;
-    }
+    if (typeof supabase === 'undefined') { console.error("Erro: O cliente Supabase não foi inicializado corretamente."); return; }
 
     // --- SELETORES DE ELEMENTOS DO DOM ---
     const giriasDestaqueContainer = document.getElementById('girias-destaque-container');
@@ -64,12 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- FUNÇÕES DE RENDERIZAÇÃO E LÓGICA ---
     function slugify(text) {
-        return text.toString().toLowerCase()
-            .replace(/\s+/g, '-')           
-            .replace(/[^\w\-]+/g, '')       
-            .replace(/\-\-+/g, '-')         
-            .replace(/^-+/, '')             
-            .replace(/-+$/, '');            
+        return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');            
     }
 
     function shuffleArray(array) {
@@ -112,8 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function createGiriaCard(giria, showAcessos = false) {
         const giriaCard = document.createElement('a');
         const slug = slugify(giria.nome);
-
-        // A URL gerada localmente é a "feia" para que o Live Server funcione
         giriaCard.href = `/giria.html?slug=${slug}`;
         
         giriaCard.classList.add('giria-card');
@@ -128,13 +118,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (giriaDoDiaNome) giriaDoDiaNome.textContent = 'Indisponível';
             return;
         }
+
+        // 1. Escolhe a gíria baseada na data
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const dayIndex = Math.floor((startOfDay.getTime() / 86400000) % giriasCache.length);
         const giriaDoDia = giriasCache[dayIndex];
+
+        // 2. Preenche o texto
         giriaDoDiaNome.textContent = giriaDoDia.nome;
         giriaDoDiaSignificado.textContent = ` ${giriaDoDia.significado}`;
-        giriaDoDiaCategoria.textContent = ` ${giriaDoDia.categoria}`;
+        if(giriaDoDiaCategoria) giriaDoDiaCategoria.textContent = ` ${giriaDoDia.categoria}`;
+
+        // 3. FAZ A CAIXA SER CLICÁVEL (Correção)
+        const box = document.querySelector('.giria-do-dia');
+        if (box) {
+            box.style.cursor = 'pointer'; // Mostra a mãozinha
+            box.onclick = function() {
+                const link = slugify(giriaDoDia.nome);
+                window.location.href = `/giria.html?slug=${link}`;
+            };
+        }
     }
 
     function displayGiriasCount() {
@@ -152,67 +156,80 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGiriasList(tendenciasContainer, tendencias);
     }
     
-    // A função openModal fica disponível, mas não é mais usada pela busca principal
     if(closeButton) closeButton.addEventListener('click', () => giriaModal.style.display = 'none');
     window.addEventListener('click', (event) => {
         if (event.target === giriaModal) giriaModal.style.display = 'none';
     });
 
-    // --- LÓGICA DE BUSCA ATUALIZADA ---
-    const handleSearch = async () => {
-        const searchTerm = searchInput.value.trim();
-        if (!searchTerm) {
-            alert('Por favor, digite uma gíria para buscar.');
-            return;
-        }
-        const results = await searchGirias(searchTerm);
-        if (results && results.length > 0) {
-            const giria = results[0];
-            // CORREÇÃO: Redireciona para a URL "bonita"
-            window.location.href = `/giria/${slugify(giria.nome)}`;
-        } else {
-            alert(`A gíria "${searchTerm}" não foi encontrada.`);
-        }
-    };
+    // --- BUSCA INTELIGENTE (ENQUANTO DIGITA) ---
+    if (searchInput) {
+        let debounceTimer;
 
-    if(searchButton) searchButton.addEventListener('click', handleSearch);
-    if(searchInput) searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleSearch();
-    });
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const val = this.value.trim();
 
-    if(searchInput) searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.trim().toLowerCase();
-        if (searchTerm.length < 2) {
-            suggestionsContainer.innerHTML = '';
-            suggestionsContainer.style.display = 'none';
-            return;
-        }
-        
-        const filteredGirias = giriasCache.filter(g => g.nome.toLowerCase().includes(searchTerm) || g.significado.toLowerCase().includes(searchTerm)).slice(0, 5); 
-        
-        suggestionsContainer.innerHTML = '';
-        if (filteredGirias.length > 0) {
-            filteredGirias.forEach(giria => {
-                const item = document.createElement('div');
-                item.classList.add('suggestion-item');
-                item.innerHTML = `<strong>${giria.nome}</strong><em>${giria.significado.substring(0, 45)}${giria.significado.length > 45 ? '...' : ''}</em>`;
-                item.addEventListener('click', () => {
-                    // CORREÇÃO: O clique no autocomplete também redireciona para a URL "bonita"
-                    window.location.href = `/giria/${slugify(giria.nome)}`;
-                });
-                suggestionsContainer.appendChild(item);
+            if (val.length < 2) {
+                if(suggestionsContainer) suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                const { data, error } = await supabase
+                    .from('girias')
+                    .select('nome, significado, categoria')
+                    .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`) // Busca nome E contexto
+                    .limit(5);
+
+                if (data && data.length > 0 && suggestionsContainer) {
+                    suggestionsContainer.innerHTML = '';
+                    suggestionsContainer.style.display = 'block';
+
+                    data.forEach(g => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.innerHTML = `
+                            <div style="display:flex; justify-content:space-between;">
+                                <strong>${g.nome}</strong>
+                                <span style="font-size:0.8em; background:#eee; padding:2px 5px; border-radius:3px;">${g.categoria}</span>
+                            </div>
+                            <em style="font-size:0.9em; color:#666; display:block;">${g.significado.substring(0, 50)}...</em>
+                        `;
+                        div.onclick = () => {
+                            const link = slugify(g.nome);
+                            window.location.href = `/giria.html?slug=${link}`;
+                        };
+                        suggestionsContainer.appendChild(div);
+                    });
+                } else {
+                    if(suggestionsContainer) suggestionsContainer.style.display = 'none';
+                }
+            }, 300);
+        });
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && suggestionsContainer) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        // Botão Buscar
+        if (searchButton) {
+            searchButton.addEventListener('click', () => {
+                const val = searchInput.value.trim();
+                if(val) window.location.href = `/giria.html?slug=${slugify(val)}`;
             });
-            suggestionsContainer.style.display = 'block';
-        } else {
-            suggestionsContainer.style.display = 'none';
         }
-    });
-    
-    document.addEventListener('click', (e) => {
-        if (e.target !== searchInput) {
-           if(suggestionsContainer) suggestionsContainer.style.display = 'none';
-        }
-    });
+        
+        // Enter
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const val = searchInput.value.trim();
+                if(val) window.location.href = `/giria.html?slug=${slugify(val)}`;
+            }
+        });
+    }
 
     if (addGiriaForm) {
         addGiriaForm.addEventListener('submit', async (e) => {

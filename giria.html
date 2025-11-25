@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Carregando Gíria... | Gíria Online!</title>
-    <meta name="description" content="Descubra o significado, origem e como usar as gírias mais populares do Brasil.">
-    
+    <title>Dicionário de Gírias e Expressões | Gíria Online!</title>
+    <meta name="description" content="Descubra o significado, origem e como usar as gírias mais populares do Brasil. O maior dicionário colaborativo da internet.">
     <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JvZF5SJlZfFQ.woff2" as="font" type="font/woff2" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -20,57 +18,88 @@
                 <li><a href="/#sobre">Sobre</a></li>
                 <li><a href="/#destaques">Gírias</a></li>
                 <li><a href="/#categorias">Categorias</a></li>
-                <li><a href="/blog.html">Blog de Gírias</a></li> 
+                <li><a href="/blog.html">Blog</a></li> 
                 <li><a href="/#adicionar">Adicionar</a></li>
                 <li><a href="/#contato">Contato</a></li>
             </ul>
         </nav>
         <div class="search-container">
             <div class="search-wrapper">
-                <input type="search" placeholder="Buscar por gíria ou significado..." id="search-giria" autocomplete="on">
+                <input type="search" placeholder="Buscar gíria..." id="search-giria" autocomplete="off">
                 <div id="suggestions-container"></div>
             </div>
-            <button id="search-button" aria-label="Buscar Gíria">Buscar</button>
+            <button id="search-button">Buscar</button>
         </div>
     </header> 
 
     <div class="container">
         <main>
             <section id="giria-detalhe-container">
-                <h2>Carregando...</h2>
+                <div id="seo-fallback" style="opacity:0.6;">
+                    <h2 style="color:var(--primary-color);">Pesquisando no Dicionário...</h2>
+                    <p>Estamos buscando a definição mais atualizada desta expressão em nosso banco de dados colaborativo.</p>
+                </div>
+            </section>
+
+            <section id="actions-container" style="display: none;">
+                <div class="vote-container" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 10px;">Essa definição ajudou?</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-upvote" style="padding: 8px 15px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px;">
+                            👍 Sim (<span id="count-up">0</span>)
+                        </button>
+                        <button id="btn-downvote" style="padding: 8px 15px; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 5px;">
+                            👎 Não (<span id="count-down">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="share-section">
+                    <h3 style="font-size: 1.2em; margin-bottom: 10px;">Compartilhar</h3>
+                    <div id="share-buttons-container" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                </div>
+            </section>
+
+            <section id="exemplos-container" style="display: none; margin-top: 30px;">
+                <h3 style="margin-bottom: 15px;">Exemplos da Galera</h3>
+                <div id="lista-exemplos" style="margin-bottom: 20px;"></div>
+                
+                <form id="form-exemplo" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="novo-exemplo" placeholder="Escreva uma frase de exemplo..." required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <button type="submit" style="padding: 10px 20px;">Enviar</button>
+                </form>
+            </section>
+
+            <section id="relacionados-container" style="display: none; margin-top: 30px;">
+                <h3>Veja Também 👀</h3>
+                <div id="lista-relacionados" class="related-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;"></div>
             </section>
         </main>
+
         <aside>
             <div class="site-stats">
                 <h3>Gírias Cadastradas</h3>
-                <p id="girias-count">0</p>
+                <p id="girias-count">...</p>
             </div>
             <div class="giria-do-dia">
                 <h3>Gíria do Dia ✨</h3>
-                <p><strong id="giria-do-dia-nome">Carregando...</strong></p>
-                <p><em>Significado: <span id="giria-do-dia-significado"></span></em></p>
-                <p><em>Categoria: <span id="giria-do-dia-categoria"></span></em></p>
+                <p><strong id="giria-do-dia-nome">...</strong></p>
+                <p><em><span id="giria-do-dia-significado"></span></em></p>
+                <span id="giria-do-dia-categoria" class="category-badge"></span>
             </div>
         </aside>
-        
     </div>
 
     <footer>
         <p>&copy; 2025 Gíria Online! - Todos os direitos reservados.</p>
+        <div style="font-size: 0.85em; margin-top: 10px; opacity: 0.7;">
+            <a href="/termos.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Termos de Uso</a> | 
+            <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a>
+        </div>
     </footer>
     
-    <!-- O modal da página inicial é necessário aqui para a busca funcionar -->
-    <div id="giriaModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2 id="modal-giria-nome"></h2>
-            <p id="modal-giria-significado"></p>
-            <p><span id="modal-giria-categoria"></span></p>
-        </div>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="/supabase-config.js" defer></script>
-    <!-- MUDANÇA: Agora esta página usa apenas o giria.js, que será mais poderoso -->
     <script src="/giria.js" defer></script> 
-</body>
+ </body>
 </html>
