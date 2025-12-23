@@ -1,7 +1,11 @@
-// script.js - VERSÃO FINAL COM BUSCA REDIRECIONANDO PARA A PÁGINA DA GÍRIA
+// script.js - VERSÃO FINAL CORRIGIDA (Usa window.db)
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof supabase === 'undefined') { console.error("Erro: O cliente Supabase não foi inicializado corretamente."); return; }
+    // AJUSTE: Verifica se window.db (nossa conexão segura) existe
+    if (typeof window.db === 'undefined') { 
+        console.error("Erro: O cliente Supabase (window.db) não foi carregado. Verifique o supabase-config.js."); 
+        return; 
+    }
 
     // --- SELETORES DE ELEMENTOS DO DOM ---
     const giriasDestaqueContainer = document.getElementById('girias-destaque-container');
@@ -30,7 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FUNÇÕES DE INTERAÇÃO COM O SUPABASE ---
     async function fetchAllGirias() {
-        const { data, error } = await supabase.from('girias').select('*').order('created_at', { ascending: false }); 
+        // AJUSTE: Usa window.db
+        const { data, error } = await window.db
+            .from('girias')
+            .select('*')
+            .eq('status', 'aprovado') // Garante que só pega as aprovadas
+            .order('created_at', { ascending: false }); 
+        
         if (error) {
             console.error('Erro ao buscar gírias:', error);
             if(giriasDestaqueContainer) giriasDestaqueContainer.innerHTML = `<p style="color: red;">Erro ao carregar as gírias.</p>`;
@@ -41,7 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function searchGirias(searchTerm) {
-        const { data, error } = await supabase.from('girias').select('*').or(`nome.ilike.%${searchTerm}%,significado.ilike.%${searchTerm}%`);
+        // AJUSTE: Usa window.db
+        const { data, error } = await window.db
+            .from('girias')
+            .select('*')
+            .eq('status', 'aprovado')
+            .or(`nome.ilike.%${searchTerm}%,significado.ilike.%${searchTerm}%`);
+            
         if (error) {
             console.error('Erro na busca:', error);
             return [];
@@ -50,13 +66,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveNewGiria(newGiriaData) {
-        const { data, error } = await supabase.from('girias').insert([newGiriaData]).select(); 
+        // AJUSTE: Usa window.db
+        const { data, error } = await window.db
+            .from('girias')
+            .insert([newGiriaData])
+            .select(); 
+            
         if (error) {
             console.error('Erro ao salvar gíria:', error);
             return null;
         }
-        giriasCache.unshift(data[0]); 
-        return data[0];
+        // Adiciona ao cache local apenas para visualização imediata (se aprovado fosse automático)
+        // Como o padrão é pendente, talvez não apareça na hora, mas o código mantém a lógica.
+        if(data && data.length > 0) {
+             giriasCache.unshift(data[0]); 
+             return data[0];
+        }
+        return null;
     }
     
     // --- FUNÇÕES DE RENDERIZAÇÃO E LÓGICA ---
@@ -86,8 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
             paginatedItems.forEach(giria => giriasDestaqueContainer.appendChild(createGiriaCard(giria)));
         }
         
-        prevButton.disabled = currentPage === 1;
-        nextButton.disabled = end >= giriasAleatorias.length;
+        if(prevButton) prevButton.disabled = currentPage === 1;
+        if(nextButton) nextButton.disabled = end >= giriasAleatorias.length;
     }
     
     function renderGiriasList(container, giriasList) {
@@ -119,21 +145,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 1. Escolhe a gíria baseada na data
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const dayIndex = Math.floor((startOfDay.getTime() / 86400000) % giriasCache.length);
         const giriaDoDia = giriasCache[dayIndex];
 
-        // 2. Preenche o texto
         giriaDoDiaNome.textContent = giriaDoDia.nome;
         giriaDoDiaSignificado.textContent = ` ${giriaDoDia.significado}`;
         if(giriaDoDiaCategoria) giriaDoDiaCategoria.textContent = ` ${giriaDoDia.categoria}`;
 
-        // 3. FAZ A CAIXA SER CLICÁVEL (Correção)
         const box = document.querySelector('.giria-do-dia');
         if (box) {
-            box.style.cursor = 'pointer'; // Mostra a mãozinha
+            box.style.cursor = 'pointer';
             box.onclick = function() {
                 const link = slugify(giriaDoDia.nome);
                 window.location.href = `/giria.html?slug=${link}`;
@@ -147,7 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function displayTendencias() {
         if (!tendenciasContainer) return;
-        const { data: tendencias, error } = await supabase.from('girias').select('*').order('acessos', { ascending: false, nullsFirst: false }).limit(5); 
+        // AJUSTE: Usa window.db
+        const { data: tendencias, error } = await window.db
+            .from('girias')
+            .select('*')
+            .eq('status', 'aprovado')
+            .order('acessos', { ascending: false, nullsFirst: false })
+            .limit(5); 
+            
         if (error) {
             console.error("Erro ao buscar tendências:", error);
             tendenciasContainer.innerHTML = '<p>Não foi possível carregar as tendências.</p>';
@@ -161,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === giriaModal) giriaModal.style.display = 'none';
     });
 
-    // --- BUSCA INTELIGENTE (ENQUANTO DIGITA) ---
+    // --- BUSCA INTELIGENTE ---
     if (searchInput) {
         let debounceTimer;
 
@@ -175,10 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             debounceTimer = setTimeout(async () => {
-                const { data, error } = await supabase
+                // AJUSTE: Usa window.db
+                const { data, error } = await window.db
                     .from('girias')
                     .select('nome, significado, categoria')
-                    .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`) // Busca nome E contexto
+                    .eq('status', 'aprovado')
+                    .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`)
                     .limit(5);
 
                 if (data && data.length > 0 && suggestionsContainer) {
@@ -207,14 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 300);
         });
 
-        // Fechar ao clicar fora
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && suggestionsContainer) {
                 suggestionsContainer.style.display = 'none';
             }
         });
 
-        // Botão Buscar
         if (searchButton) {
             searchButton.addEventListener('click', () => {
                 const val = searchInput.value.trim();
@@ -222,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Enter
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const val = searchInput.value.trim();
@@ -235,19 +264,25 @@ document.addEventListener('DOMContentLoaded', () => {
         addGiriaForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             formMessage.textContent = 'Enviando...';
-            const newGiria = await saveNewGiria({
+            
+            // Cria objeto da nova gíria (status será pendente por padrão no banco)
+            const newGiriaData = {
                 nome: document.getElementById('giria-nome').value,
                 significado: document.getElementById('giria-significado').value,
                 categoria: document.getElementById('giria-categoria').value
-            });
+            };
+
+            const newGiria = await saveNewGiria(newGiriaData);
+            
             if (newGiria) {
                 addGiriaForm.reset();
                 formMessage.style.color = 'green';
-                formMessage.textContent = 'Gíria adicionada com sucesso!';
-                initializePage();
+                formMessage.textContent = 'Gíria enviada para aprovação!';
+                // Não chama initializePage() para não recarregar tudo, apenas limpa
             } else {
+                // Se saveNewGiria retornou null, já logou o erro
                 formMessage.style.color = 'red';
-                formMessage.textContent = 'Falha ao adicionar a gíria.';
+                formMessage.textContent = 'Erro ao enviar. Tente novamente.';
             }
             setTimeout(() => formMessage.textContent = '', 3000);
         });
