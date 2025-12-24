@@ -1,7 +1,9 @@
+// --- START OF FILE giria.js (CORRIGIDO com window.db) ---
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Verifica se Supabase carregou
-    if (typeof supabase === 'undefined') {
-        console.error("ERRO CRÍTICO: Cliente Supabase não encontrado.");
+    // AJUSTE: Verifica se window.db existe em vez de supabase
+    if (typeof window.db === 'undefined') {
+        console.error("ERRO CRÍTICO: Cliente Supabase (window.db) não encontrado. Verifique o supabase-config.js.");
         return;
     }
 
@@ -47,22 +49,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Buscar enquanto digita
     if (searchInput) {
-        let debounceTimer; // Para não travar o banco se digitar muito rápido
+        let debounceTimer; 
 
         searchInput.addEventListener('input', function() {
             clearTimeout(debounceTimer);
             const val = this.value.trim();
 
-            // Só busca se tiver mais de 2 letras
             if (val.length < 2) {
                 if(suggestionsContainer) suggestionsContainer.style.display = 'none';
                 return;
             }
 
             debounceTimer = setTimeout(async () => {
-                // Busca no NOME ou no SIGNIFICADO (Contexto)
-                // A sintaxe .or() permite buscar em colunas diferentes
-                const { data, error } = await supabase
+                // AJUSTE: Usa window.db
+                const { data, error } = await window.db
                     .from('girias')
                     .select('nome, significado, categoria')
                     .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`)
@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.forEach(g => {
                         const div = document.createElement('div');
                         div.className = 'suggestion-item';
-                        // Layout do item da lista
                         div.innerHTML = `
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <strong style="color:#1D2D44;">${g.nome}</strong>
@@ -85,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${g.significado}
                             </div>
                         `;
-                        // Ao clicar, vai para a página
                         div.onclick = () => {
                             const link = slugify(g.nome);
                             window.location.href = `/giria.html?slug=${link}`;
@@ -95,17 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     if(suggestionsContainer) suggestionsContainer.style.display = 'none';
                 }
-            }, 300); // Espera 300ms após parar de digitar
+            }, 300); 
         });
 
-        // 2. Clicar fora fecha a busca
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && suggestionsContainer) {
                 suggestionsContainer.style.display = 'none';
             }
         });
 
-        // 3. Botão buscar força ir para a primeira opção ou busca exata
         if (searchButton) {
             searchButton.addEventListener('click', () => {
                 const val = searchInput.value.trim();
@@ -113,10 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
-    // ============================================================
-    // FIM DA BUSCA
-    // ============================================================
 
     // --- FUNÇÃO PRINCIPAL DE CARREGAMENTO DA PÁGINA ---
     async function fetchGiria() {
@@ -128,13 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const term = unslugify(slug);
 
-        // 1. TENTA BUSCAR NO BANCO (Match Exato)
-        let { data, error } = await supabase.from('girias').select('*').ilike('nome', term).limit(1);
+        // 1. TENTA BUSCAR NO BANCO (Match Exato) - AJUSTE: window.db
+        let { data, error } = await window.db.from('girias').select('*').ilike('nome', term).limit(1);
 
-        // 2. FALLBACK: Se não achar com acento, tenta buscar sem acento
+        // 2. FALLBACK: Busca sem acento - AJUSTE: window.db
         if (!data || data.length === 0) {
             const termNoAccent = term.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const res = await supabase.from('girias').select('*').ilike('nome', termNoAccent).limit(1);
+            const res = await window.db.from('girias').select('*').ilike('nome', termNoAccent).limit(1);
             if(res.data && res.data.length > 0) data = res.data;
         }
 
@@ -146,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentGiria = data[0];
         currentId = currentGiria.id || currentGiria.codigo; 
 
-        // LÓGICA DE VISUALIZAÇÃO (CRONÔMETRO DE 30 MIN)
+        // LÓGICA DE VISUALIZAÇÃO
         const storageKey = `last_view_${currentId}`;
         const now = Date.now();
         const lastView = localStorage.getItem(storageKey);
@@ -172,7 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (shouldCount) {
             localStorage.setItem(storageKey, now.toString());
-            supabase.rpc('incrementar_acesso', { giria_id: currentId }).then(({ error }) => {
+            // AJUSTE: window.db.rpc
+            window.db.rpc('incrementar_acesso', { giria_id: currentId }).then(({ error }) => {
                 if(error) console.warn("Sync views:", error.message);
             });
         }
@@ -222,19 +215,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (oldVote) {
             if (oldVote === 'up') {
                 countUp.innerText = Math.max(0, parseInt(countUp.innerText) - 1);
-                supabase.rpc('decrementar_upvote', { giria_id: currentId });
+                // AJUSTE: window.db.rpc
+                window.db.rpc('decrementar_upvote', { giria_id: currentId });
             } else {
                 countDown.innerText = Math.max(0, parseInt(countDown.innerText) - 1);
-                supabase.rpc('decrementar_downvote', { giria_id: currentId });
+                window.db.rpc('decrementar_downvote', { giria_id: currentId });
             }
         }
 
         if (newVote === 'up') {
             countUp.innerText = parseInt(countUp.innerText) + 1;
-            supabase.rpc('incrementar_upvote', { giria_id: currentId });
+            window.db.rpc('incrementar_upvote', { giria_id: currentId });
         } else {
             countDown.innerText = parseInt(countDown.innerText) + 1;
-            supabase.rpc('incrementar_downvote', { giria_id: currentId });
+            window.db.rpc('incrementar_downvote', { giria_id: currentId });
         }
 
         localStorage.setItem(key, newVote);
@@ -288,7 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const txtOrig = btn.textContent;
             btn.textContent = 'Enviando...'; btn.disabled = true;
 
-            const { error } = await supabase.rpc('adicionar_exemplo', { 
+            // AJUSTE: window.db.rpc
+            const { error } = await window.db.rpc('adicionar_exemplo', { 
                 giria_id: currentId, 
                 novo_exemplo: texto 
             });
@@ -307,13 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- VEJA TAMBÉM ---
-    // --- VEJA TAMBÉM (COM FALLBACK INTELIGENTE) ---
     async function fetchRelated() {
-        // Coluna para não repetir a gíria atual na lista
         const colName = currentGiria.id ? 'id' : 'codigo';
 
-        // 1. Tenta buscar gírias da MESMA categoria
-        let { data } = await supabase
+        // 1. Busca MESMA categoria - AJUSTE: window.db
+        let { data } = await window.db
             .from('girias')
             .select('nome, significado, categoria')
             .eq('categoria', currentGiria.categoria)
@@ -322,12 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let tituloSugestao = "Veja Também";
 
-        // 2. SE NÃO ACHOU NADA (Fallback), busca quaisquer gírias recentes
+        // 2. FALLBACK - AJUSTE: window.db
         if (!data || data.length === 0) {
-            const { data: dataBackup } = await supabase
+            const { data: dataBackup } = await window.db
                 .from('girias')
                 .select('nome, significado, categoria')
-                .neq(colName, currentId) // Só não mostra a atual
+                .neq(colName, currentId)
                 .limit(5);
             
             if (dataBackup && dataBackup.length > 0) {
@@ -336,23 +329,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Verifica se o container existe no HTML
         if (!listaRelacionados) return;
 
-        // Tenta atualizar o título da seção para ficar mais dinâmico
         const sectionTitle = document.querySelector('#relacionados-container h3');
         if (sectionTitle) sectionTitle.innerText = `${tituloSugestao} 👀`;
 
-        // 4. Se ainda assim estiver vazio (banco zerado), avisa
         if (!data || data.length === 0) {
             listaRelacionados.innerHTML = '<p style="color:#888; font-style:italic;">Ainda sem sugestões. Seja o primeiro a adicionar mais!</p>';
             return;
         }
 
-        // 5. Renderiza os Cards
         let html = '';
         data.forEach(g => {
-            // Função slugify repetida aqui caso esteja fora de escopo, para garantir links
             const slug = g.nome.toLowerCase().trim()
                 .replace(/\s+/g, '-')
                 .replace(/[^\w\-\u00C0-\u00FF]+/g, '');
@@ -370,15 +358,17 @@ document.addEventListener('DOMContentLoaded', () => {
         listaRelacionados.innerHTML = html;
     }
 
-    // --- SIDEBAR (Sidebar global da página) ---
+    // --- SIDEBAR ---
     async function loadGlobals() {
-        const { count } = await supabase.from('girias').select('*', { count: 'exact', head: true });
+        // AJUSTE: window.db
+        const { count } = await window.db.from('girias').select('*', { count: 'exact', head: true });
         if (count !== null && giriasCountElement) {
             giriasCountElement.innerText = count;
         }
 
         if(gDiaNome) {
-            const { data } = await supabase.from('girias').select('*').limit(50);
+            // AJUSTE: window.db
+            const { data } = await window.db.from('girias').select('*').limit(50);
             if(data && data.length > 0) {
                 const dayIndex = Math.floor((new Date().setHours(0,0,0,0) / 86400000) % data.length);
                 const today = data[dayIndex];
