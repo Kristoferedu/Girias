@@ -1,0 +1,151 @@
+:root {
+    --bg: #0d131c;
+    --card: #121a26;
+    --border: #1f2c3d;
+    --primary: #13f1fc;
+    --text: #e8eef5;
+    --muted: #94a3b8;
+    --danger: #ff6b6b;
+    --success: #22c55e;
+    --radius: 12px;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at 20% 20%, rgba(19,241,252,0.04), transparent 25%),
+                radial-gradient(circle at 80% 0%, rgba(100,255,218,0.08), transparent 20%),
+                #0b111a;
+    color: var(--text);
+    min-height: 100vh;
+}
+
+a { color: var(--primary); }
+
+.auth-body {
+    display: grid;
+    place-items: center;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    width: min(420px, 100%);
+    background: rgba(16,24,36,0.9);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow);
+}
+
+.auth-card h1 { margin: 0 0 10px; }
+.subtitle { color: var(--muted); margin-top: 4px; margin-bottom: 20px; }
+
+label { display: block; margin-bottom: 6px; font-weight: 600; }
+input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #0f1622;
+    color: var(--text);
+    margin-bottom: 14px;
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(90deg, #13f1fc, #00c2ff);
+    color: #002031;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(0,194,255,0.35); }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.status-text { font-size: 0.95em; margin-top: 10px; color: var(--muted); }
+.status-text.error { color: var(--danger); }
+.status-text.success { color: var(--success); }
+
+/* Painel */
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 40px 10px;
+}
+
+.admin-header h1 { margin: 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: 2px; font-size: 0.75em; color: var(--muted); margin: 0 0 6px; }
+.subtitle { font-size: 0.95em; }
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.session-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 30px;
+    font-size: 0.9em;
+    color: var(--muted);
+}
+
+.ghost {
+    width: auto;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+}
+
+.admin-container { padding: 10px 40px 40px; display: grid; gap: 20px; }
+.card {
+    background: rgba(15,22,34,0.95);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.kpi-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.kpi {
+    background: #0f1622;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+.kpi strong { font-size: 1.8em; }
+.kpi-label { margin: 0 0 6px; color: var(--muted); font-weight: 600; }
+.kpi.danger strong { color: var(--danger); }
+
+.card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.list { display: flex; flex-direction: column; gap: 16px; }
+
+.list-item {
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #0f1622;
+}
+
+.list-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.list-item h3 { margin: 0; }
+.muted { color: var(--muted); font-size: 0.9em; }
+.meaning { margin: 8px 0 12px; color: #d6e2f5; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.actions button { width: auto; padding: 10px 16px; }
+
+button.approve { background: linear-gradient(90deg, #22c55e, #16a34a); color: #022312; }
+button.reject { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+
+@media (max-width: 720px) {
+    .admin-header { flex-direction: column; align-items: flex-start; gap: 12px; padding-inline: 20px; }
+    .admin-container { padding-inline: 20px; }
+}

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D2D44">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog de Gírias - Gíria Online!</title>
@@ -11,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
     <header>
@@ -30,20 +33,13 @@
 
     <div class="container">
         <main>
-            <section id="blog-posts">
-                <h2>Blog de Gírias ✍️</h2>
-                <p>Curiosidades, histórias e as origens das expressões mais populares do Brasil.</p>
-                 <article class="post-card">
-                    <h3>Estamos Trabalhando para isso acontecer da melhor forma</h3>
-                    <div class="post-meta">
-                        <span>Por Equipe Gíria Online</span> | <span>15 de Novembro, 2025</span>
-                    </div>
-                    <p>O Gírias Online! é um projeto independente, criado e mantido por uma única pessoa que acredita profundamente no poder da linguagem como expressão da cultura brasileira. Por isso, peço a sua compreensão e paciência enquanto novas funcionalidades estão sendo desenvolvidas e aprimoradas.</p> <p>O Brasil é historicamente marcado por uma riqueza cultural imensa múltiplas regiões, sotaques, vivências e identidades que moldam nossas formas de falar e de nos conectar. Cada gíria carrega uma história, um contexto e uma maneira única de enxergar o mundo. O objetivo deste projeto é justamente preservar, organizar e celebrar essa diversidade linguística de forma acessível, viva e em constante crescimento.</p> <p>Em breve, você poderá explorar ainda mais recursos, interações e conteúdos que refletem a criatividade do nosso povo. Obrigado por fazer parte deste início e por apoiar a construção de um espaço que honra a cultura popular brasileira em toda a sua variedade.</p>
-                    <a href="index.html#sobre">Continuar pelo site</a>
-                </article>
-                
-            </section>
-        </main>
+    <section id="blog-posts">
+        <h2>Blog de Gírias ✍️</h2>
+        <p id="blog-loading">Carregando as melhores curiosidades...</p>
+        <!-- Os posts que você aprovar no painel vão aparecer aqui dentro automaticamente -->
+        <div id="container-posts-dinamicos"></div>
+    </section>
+</main>
 
         <aside>
             <div class="site-stats">
@@ -60,15 +56,33 @@
     </div>
 
 <footer style="text-align: center;">
-    <p>&copy; 2025 Gíria Online! - Todos os direitos reservados.</p>
+    <p>&copy; 2026 Gíria Online! - Todos os direitos reservados.</p>
     <div style="font-size: 0.85em; margin-top: 10px; opacity: 0.7;">
         <a href="/termos.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Termos de Uso</a> | 
-        <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a>
+        <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a> | 
+    <a href="/novidades.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Novidades</a>
     </div>
 </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase-config.js" defer></script>
     <script src="script.js" defer></script> 
-</body>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('✅ Modo Offline ativado!', reg.scope))
+                .catch(err => console.log('❌ Falha no Service Worker:', err));
+        });
+    }
+    
+     </script>
+     <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+</script>
+ </body>
 </html>

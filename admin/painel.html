@@ -1,0 +1,181 @@
+<!-- START OF FILE painel.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Torre de Controle</title>
+    <link rel="stylesheet" href="/admin/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos extras para as abas e destaques */
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--muted); padding: 12px 20px; cursor: pointer; font-size: 0.95rem; font-weight: 600; border-radius: 8px 8px 0 0; transition: 0.2s; }
+        .tab-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: rgba(19, 241, 252, 0.05); }
+        
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        
+        .highlight-context { color: var(--primary); font-weight: bold; background: rgba(19, 241, 252, 0.1); padding: 0 4px; border-radius: 4px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilo para Inputs e Selects dentro do modal */
+        #blogForm input, #blogForm select, #blogForm textarea,
+        #newsForm input, #newsForm select, #newsForm textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1622; color: #fff; border: 1px solid var(--border); border-radius: 8px; font-family: inherit;
+        }
+        label { color: var(--muted); font-size: 0.85rem; display: block; margin-bottom: 5px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div>
+            <p class="eyebrow">Torre de Comando</p>
+            <h1>Administração</h1>
+        </div>
+        <div class="header-actions">
+            <span id="session-email" class="session-pill">--</span>
+            <button id="logout-button" class="ghost">Sair</button>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <!-- KPIs Globais -->
+        <section class="card kpi-grid">
+            <div class="kpi"> <p class="kpi-label">Gírias Pendentes</p> <strong id="kpi-pendentes" style="color:#ff6b6b">--</strong> </div>
+            <div class="kpi"> <p class="kpi-label">Exemplos Novos</p> <strong id="kpi-exemplos">--</strong> </div>
+            <div class="kpi"> <p class="kpi-label">Posts Blog</p> <strong id="kpi-posts">--</strong> </div>
+        </section>
+
+        <!-- Navegação por Abas -->
+        <nav class="tabs">
+            <button class="tab-btn active" id="tab-girias" onclick="switchTab('girias')">📝 Gírias</button>
+            <button class="tab-btn" id="tab-exemplos" onclick="switchTab('exemplos')">💬 Exemplos</button>
+            <button class="tab-btn" id="tab-blog" onclick="switchTab('blog')">📰 Blog</button>
+            <button class="tab-btn" id="tab-novidades" onclick="switchTab('novidades')">🚀 Plataforma</button>
+        </nav>
+
+        <!-- 1. ABA GÍRIAS -->
+        <section id="view-girias" class="view-section active card">
+            <div class="card-header">
+                <h2>Gírias em Análise</h2>
+                <button onclick="loadPendingGirias()" class="ghost" title="Recarregar">🔄</button>
+            </div>
+            <div id="pending-list" class="list"></div>
+            <p id="list-status" class="status-text"></p>
+        </section>
+
+        <!-- 2. ABA EXEMPLOS -->
+        <section id="view-exemplos" class="view-section card">
+            <div class="card-header">
+                <h2>Exemplos dos Usuários</h2>
+                <button onclick="loadPendingExamples()" class="ghost" title="Recarregar">🔄</button>
+            </div>
+            <div id="examples-list" class="list"></div>
+        </section>
+
+        <!-- 3. ABA BLOG -->
+        <section id="view-blog" class="view-section card">
+            <div class="card-header">
+                <h2>Gerenciar Artigos</h2>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="loadBlogPosts()" class="ghost">🔄</button>
+                    <button onclick="window.openBlogModal()" class="approve" style="width:auto; padding: 10px 20px;">+ Novo Post</button>
+                </div>
+            </div>
+            <div id="blog-list" class="list" style="margin-top:20px;"></div>
+        </section>
+
+        <!-- 4. ABA NOVIDADES (NOVO) -->
+        <section id="view-novidades" class="view-section card">
+            <div class="card-header">
+                <h2>Histórico de Atualizações</h2>
+                <button onclick="window.openNewsModal()" class="approve" style="width:auto; padding: 10px 20px;">+ Registrar Mudança</button>
+            </div>
+            <div id="news-list" class="list" style="margin-top:20px;"></div>
+        </section>
+    </main>
+
+    <!-- MODAL DO BLOG -->
+    <div id="blogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center;">
+        <div class="card" style="width:650px; max-width:95%; max-height:95vh; overflow-y:auto; border: 1px solid var(--primary);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+                <h2 style="margin:0">Escrever no Blog</h2>
+                <button onclick="document.getElementById('blogModal').style.display='none'" class="ghost" style="padding: 5px 12px;">✕</button>
+            </div>
+            <form id="blogForm">
+                <input type="hidden" id="postId">
+                <label>Título do Artigo</label>
+                <input type="text" id="postTitle" required>
+                <label>Slug (URL)</label>
+                <input type="text" id="postSlug" required>
+                <label>Link da Imagem</label>
+                <input type="text" id="postImage">
+                <label>Resumo</label>
+                <textarea id="postResumo" rows="2"></textarea>
+                <label>Conteúdo Principal</label>
+                <textarea id="postContent" rows="12" required></textarea>
+                <label>Visibilidade</label>
+                <select id="postStatus">
+                    <option value="rascunho">Rascunho</option>
+                    <option value="publicado">Publicado</option>
+                </select>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="approve">💾 Salvar Post</button>
+                    <button type="button" class="reject" onclick="document.getElementById('blogModal').style.display='none'">Sair</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOVIDADES (NOVO) -->
+    <div id="newsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center;">
+        <div class="card" style="width:500px; max-width:95%; border: 1px solid var(--primary);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h2 style="margin:0">Registrar Melhoria</h2>
+                <button onclick="document.getElementById('newsModal').style.display='none'" class="ghost">✕</button>
+            </div>
+            <form id="newsForm">
+                <label>Ícone (Emoji)</label>
+                <input type="text" id="newsIcon" value="🚀">
+                <label>Título da Mudança</label>
+                <input type="text" id="newsTitle" placeholder="Ex: Sistema Offline Ativado" required>
+                <label>Descrição da Mudança</label>
+                <textarea id="newsDesc" rows="4" placeholder="O que mudou na plataforma?" required></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="approve">💾 Registrar</button>
+                    <button type="button" class="reject" onclick="document.getElementById('newsModal').style.display='none'">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/supabase-config.js"></script>
+    <script src="/admin/painel.js"></script>
+    
+    <script>
+        async function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            const activeSection = document.getElementById('view-' + tabId);
+            const activeBtn = document.getElementById('tab-' + tabId);
+            
+            if (activeSection && activeBtn) {
+                activeSection.classList.add('active');
+                activeBtn.classList.add('active');
+            }
+
+            // Carregamento dinâmico
+            if(tabId === 'girias' && typeof loadPendingGirias === 'function') loadPendingGirias();
+            if(tabId === 'exemplos' && typeof loadPendingExamples === 'function') loadPendingExamples();
+            if(tabId === 'blog' && typeof loadBlogPosts === 'function') loadBlogPosts();
+            if(tabId === 'novidades' && typeof loadPlatformNews === 'function') loadPlatformNews();
+        }
+    </script>
+</body>
+</html>

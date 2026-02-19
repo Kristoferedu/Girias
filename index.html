@@ -11,7 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
-    
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D2D44">
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-353634547"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -32,6 +33,7 @@
                 <li><a href="/blog.html">Blog de Gírias</a></li> 
                 <li><a href="/#adicionar">Adicionar</a></li>
                 <li><a href="/#contato">Contato</a></li>
+            
             </ul>
         </nav>
         <div class="search-container">
@@ -42,6 +44,19 @@
             <button id="search-button" aria-label="Buscar Gíria">Buscar</button>
         </div>
     </header> 
+<!-- Pop-up de Novidades Dinâmico -->
+<div id="popup-news" class="news-popup-overlay" style="display: none;">
+    <div class="news-popup-card">
+        <button class="news-popup-close" onclick="fecharPopup()">&times;</button>
+        <div id="popup-icon" class="news-popup-icon">🚀</div>
+        <h2 id="popup-title">Novidade na área!</h2>
+        <p id="popup-desc">Carregando as últimas atualizações...</p>
+        <div class="news-popup-actions">
+            <a href="/novidades.html" class="news-btn-go" onclick="marcarComoVisto()">Ver Tudo no Histórico</a>
+            <button class="news-btn-later" onclick="fecharPopup()">Fechar</button>
+        </div>
+    </div>
+</div>
 
     <div class="container">
         <main>
@@ -126,10 +141,11 @@
     </div>
 
 <footer style="text-align: center;">
-    <p>&copy; 2025 Gíria Online! - Todos os direitos reservados.</p>
+    <p>&copy; 2026 Gíria Online! - Todos os direitos reservados.</p>
     <div style="font-size: 0.85em; margin-top: 10px; opacity: 0.7;">
-        <a href="/termos.html" style="color: inherit; margin: 0 5px;">Termos de Uso</a> | 
-        <a href="/privacidade.html" style="color: inherit; margin: 0 5px;">Privacidade</a>
+        <a href="/termos.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Termos de Uso</a> | 
+        <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a> | 
+    <a href="/novidades.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Novidades</a>
     </div>
     <!-- Acesso Admin (pode ficar escondido) -->
     <div style="margin-top: 20px;">
@@ -148,5 +164,12 @@
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
      <script src="supabase-config.js" defer></script>
      <script src="script.js" defer></script>
-     </body>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+</script>
+ </body>
  </html>

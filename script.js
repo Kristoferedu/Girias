@@ -1,30 +1,24 @@
-// script.js - VERSÃO FINAL CORRIGIDA (Usa window.db)
+// script.js - VERSÃO TOTALMENTE UNIFICADA (Cache + Blog + Popup + Tendências)
 
 document.addEventListener('DOMContentLoaded', () => {
-    // AJUSTE: Verifica se window.db (nossa conexão segura) existe
+    // 1. VERIFICAÇÃO DE CONEXÃO
     if (typeof window.db === 'undefined') { 
-        console.error("Erro: O cliente Supabase (window.db) não foi carregado. Verifique o supabase-config.js."); 
+        console.error("Erro: O cliente Supabase (window.db) não foi carregado."); 
         return; 
     }
 
-    // --- SELETORES DE ELEMENTOS DO DOM ---
+    // --- SELETORES GLOBAIS ---
     const giriasDestaqueContainer = document.getElementById('girias-destaque-container');
-    const searchInput = document.getElementById('search-giria');
-    const searchButton = document.getElementById('search-button');
-    const suggestionsContainer = document.getElementById('suggestions-container');
-    const addGiriaForm = document.getElementById('add-giria-form');
-    const formMessage = document.getElementById('form-message');
-    const categoryList = document.querySelector('.category-list');
-    const giriaModal = document.getElementById('giriaModal');
-    const closeButton = document.querySelector('.close-button');
-    const giriaDoDiaNome = document.getElementById('giria-do-dia-nome');
-    const giriaDoDiaSignificado = document.getElementById('giria-do-dia-significado');
-    const giriaDoDiaCategoria = document.getElementById('giria-do-dia-categoria');
-    const giriasCountElement = document.getElementById('girias-count');
     const tendenciasContainer = document.getElementById('tendencias-container');
-    const prevButton = document.getElementById('prev-button');
-    const nextButton = document.getElementById('next-button');
-    const refreshButton = document.getElementById('refresh-button');
+    const searchInput = document.getElementById('search-giria');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const giriasCountElement = document.getElementById('girias-count');
+    const blogPostsContainer = document.getElementById('container-posts-dinamicos');
+
+    // --- CONFIGURAÇÃO DE CACHE ---
+    const CACHE_KEY = 'girias_cache_v1';
+    const CACHE_TIME_KEY = 'girias_cache_time';
+    const TEMPO_VALIDADE = 24 * 60 * 60 * 1000; // 24 horas
 
     // --- ESTADO DA APLICAÇÃO ---
     let giriasCache = []; 
@@ -32,307 +26,259 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     const itemsPerPage = 5;
 
-    // --- FUNÇÕES DE INTERAÇÃO COM O SUPABASE ---
-    async function fetchAllGirias() {
-        // AJUSTE: Usa window.db
-        const { data, error } = await window.db
-            .from('girias')
-            .select('*')
-            .eq('status', 'aprovado') // Garante que só pega as aprovadas
-            .order('created_at', { ascending: false }); 
-        
-        if (error) {
-            console.error('Erro ao buscar gírias:', error);
-            if(giriasDestaqueContainer) giriasDestaqueContainer.innerHTML = `<p style="color: red;">Erro ao carregar as gírias.</p>`;
-            return [];
+    // ============================================================
+    // 🌐 FUNÇÕES DE DADOS (SUPABASE + CACHE)
+    // ============================================================
+
+    async function fetchAllGirias(forceUpdate = false) {
+        const now = Date.now();
+        const savedData = localStorage.getItem(CACHE_KEY);
+        const savedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+        if (!forceUpdate && savedData && savedTime) {
+            const idade = now - parseInt(savedTime);
+            if (idade < TEMPO_VALIDADE) {
+                console.log("⚡ Usando gírias do cache local");
+                giriasCache = JSON.parse(savedData);
+                return giriasCache;
+            }
         }
-        giriasCache = data;
-        return data;
-    }
-    
-    async function searchGirias(searchTerm) {
-        // AJUSTE: Usa window.db
+
+        console.log("🌐 Buscando gírias frescas do Supabase...");
         const { data, error } = await window.db
             .from('girias')
             .select('*')
             .eq('status', 'aprovado')
-            .or(`nome.ilike.%${searchTerm}%,significado.ilike.%${searchTerm}%`);
-            
-        if (error) {
-            console.error('Erro na busca:', error);
-            return [];
+            .order('created_at', { ascending: false }); 
+        
+        if (!error && data) {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            localStorage.setItem(CACHE_TIME_KEY, now.toString());
+            giriasCache = data;
+            return data;
         }
-        return data;
+        return [];
     }
 
-    async function saveNewGiria(newGiriaData) {
-        // AJUSTE: Usa window.db
-        const { data, error } = await window.db
-            .from('girias')
-            .insert([newGiriaData])
-            .select(); 
-            
+    async function carregarPostsPublicos() {
+        if (!blogPostsContainer) return;
+
+        const { data: posts, error } = await window.db
+            .from('posts')
+            .select('*')
+            .eq('status', 'publicado') 
+            .order('created_at', { ascending: false });
+
+        const loadingMsg = document.getElementById('blog-loading');
+
         if (error) {
-            console.error('Erro ao salvar gíria:', error);
-            return null;
+            blogPostsContainer.innerHTML = "<p>Erro ao carregar blog.</p>";
+            return;
         }
-        // Adiciona ao cache local apenas para visualização imediata (se aprovado fosse automático)
-        // Como o padrão é pendente, talvez não apareça na hora, mas o código mantém a lógica.
-        if(data && data.length > 0) {
-             giriasCache.unshift(data[0]); 
-             return data[0];
+
+        if (!posts || posts.length === 0) {
+            blogPostsContainer.innerHTML = "<p>Em breve, novos artigos por aqui! 🚀</p>";
+            if(loadingMsg) loadingMsg.style.display = 'none';
+            return;
         }
-        return null;
+
+        if(loadingMsg) loadingMsg.style.display = 'none';
+        
+        blogPostsContainer.innerHTML = '';
+        posts.forEach(post => {
+            const date = new Date(post.created_at).toLocaleDateString('pt-BR');
+            const article = document.createElement('article');
+            article.className = 'post-card';
+            article.innerHTML = `
+                ${post.imagem_url ? `<img src="${post.imagem_url}" alt="${post.titulo}" style="width:100%; border-radius:8px; margin-bottom:15px;">` : ''}
+                <h3>${post.titulo}</h3>
+                <div class="post-meta">Por ${post.autor || 'Equipe'} | ${date}</div>
+                <p>${post.resumo || post.conteudo.substring(0, 150) + '...'}</p>
+                <a href="/post.html?slug=${post.slug}" style="color:var(--accent-color); font-weight:bold; text-decoration:none;">Ler tudo →</a>
+            `;
+            blogPostsContainer.appendChild(article);
+        });
     }
-    
-    // --- FUNÇÕES DE RENDERIZAÇÃO E LÓGICA ---
+
+    async function displayTendencias() {
+        if (!tendenciasContainer) return;
+        const { data: trends } = await window.db
+            .from('girias')
+            .select('*')
+            .eq('status', 'aprovado')
+            .order('acessos', { ascending: false })
+            .limit(5);
+
+        if (trends) {
+            tendenciasContainer.innerHTML = '';
+            trends.forEach(g => {
+                const card = document.createElement('a');
+                card.href = `/giria.html?slug=${slugify(g.nome)}`;
+                card.className = 'giria-card trend-item';
+                card.innerHTML = `<strong>${g.nome}</strong><span>${g.significado.substring(0, 70)}...</span><p style="font-size:0.8em; margin-top:10px; color:var(--primary-color)">🔥 ${g.acessos || 0} acessos</p>`;
+                tendenciasContainer.appendChild(card);
+            });
+        }
+    }
+
+    // ============================================================
+    // 🎨 FUNÇÕES DE INTERFACE (UI)
+    // ============================================================
+
     function slugify(text) {
         return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');            
-    }
-
-    function shuffleArray(array) {
-        let newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-        }
-        return newArray;
     }
 
     function renderGiriasPaginadas() {
         if (!giriasDestaqueContainer) return;
         giriasDestaqueContainer.innerHTML = '';
         const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const paginatedItems = giriasAleatorias.slice(start, end);
-
-        if (paginatedItems.length === 0) {
-            giriasDestaqueContainer.innerHTML = '<p>Nenhuma gíria encontrada.</p>';
-        } else {
-            paginatedItems.forEach(giria => giriasDestaqueContainer.appendChild(createGiriaCard(giria)));
-        }
+        const paginatedItems = giriasAleatorias.slice(start, start + itemsPerPage);
+        paginatedItems.forEach(g => {
+            const div = document.createElement('a');
+            div.href = `/giria.html?slug=${slugify(g.nome)}`;
+            div.className = 'giria-card';
+            div.innerHTML = `<strong>${g.nome}</strong><span>${g.significado.substring(0, 100)}...</span>`;
+            giriasDestaqueContainer.appendChild(div);
+        });
         
-        if(prevButton) prevButton.disabled = currentPage === 1;
-        if(nextButton) nextButton.disabled = end >= giriasAleatorias.length;
-    }
-    
-    function renderGiriasList(container, giriasList) {
-        if (!container) return;
-        container.innerHTML = '';
-        if (!giriasList || giriasList.length === 0) {
-            container.innerHTML = '<p>Nenhuma gíria encontrada.</p>';
-            return;
-        }
-        const isTendencia = container.id === 'tendencias-container';
-        giriasList.forEach(giria => container.appendChild(createGiriaCard(giria, isTendencia)));
-    }
-
-    function createGiriaCard(giria, showAcessos = false) {
-        const giriaCard = document.createElement('a');
-        const slug = slugify(giria.nome);
-        giriaCard.href = `/giria.html?slug=${slug}`;
-        
-        giriaCard.classList.add('giria-card');
-        const acessosHTML = showAcessos ? `<p style="font-size: 0.9em; color: var(--primary-color); font-weight: 600; margin-top: 10px;">🔥 ${giria.acessos || 0} acessos</p>` : '';
-        giriaCard.innerHTML = `<strong>${giria.nome}</strong><span>${giria.significado.substring(0, 100)}${giria.significado.length > 100 ? '...' : ''}</span><p style="font-size: 0.8em; color: #888; margin-top: 5px;">Categoria: ${giria.categoria}</p>${acessosHTML}`;
-        
-        return giriaCard;
+        const prev = document.getElementById('prev-button');
+        const next = document.getElementById('next-button');
+        if(prev) prev.disabled = currentPage === 1;
+        if(next) next.disabled = (start + itemsPerPage) >= giriasAleatorias.length;
     }
 
     function displayGiriaDoDia() {
-        if (!giriaDoDiaNome || giriasCache.length === 0) {
-            if (giriaDoDiaNome) giriaDoDiaNome.textContent = 'Indisponível';
-            return;
-        }
+        const nomeEl = document.getElementById('giria-do-dia-nome');
+        if (!nomeEl || giriasCache.length === 0) return;
 
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const dayIndex = Math.floor((startOfDay.getTime() / 86400000) % giriasCache.length);
-        const giriaDoDia = giriasCache[dayIndex];
+        const dayIndex = Math.floor((new Date().setHours(0,0,0,0) / 86400000) % giriasCache.length);
+        const g = giriasCache[dayIndex];
 
-        giriaDoDiaNome.textContent = giriaDoDia.nome;
-        giriaDoDiaSignificado.textContent = ` ${giriaDoDia.significado}`;
-        if(giriaDoDiaCategoria) giriaDoDiaCategoria.textContent = ` ${giriaDoDia.categoria}`;
+        nomeEl.textContent = g.nome;
+        const sigEl = document.getElementById('giria-do-dia-significado');
+        if(sigEl) sigEl.textContent = g.significado;
+        
+        const cat = document.getElementById('giria-do-dia-categoria');
+        if(cat) { cat.textContent = g.categoria; cat.style.display = 'inline-block'; }
 
         const box = document.querySelector('.giria-do-dia');
         if (box) {
             box.style.cursor = 'pointer';
-            box.onclick = function() {
-                const link = slugify(giriaDoDia.nome);
-                window.location.href = `/giria.html?slug=${link}`;
-            };
+            box.onclick = () => window.location.href = `/giria.html?slug=${slugify(g.nome)}`;
         }
     }
 
-    function displayGiriasCount() {
-        if(giriasCountElement) giriasCountElement.textContent = giriasCache.length;
-    }
+    // ============================================================
+    // 🚀 POP-UP DE NOVIDADES DINÂMICO
+    // ============================================================
 
-    async function displayTendencias() {
-        if (!tendenciasContainer) return;
-        // AJUSTE: Usa window.db
-        const { data: tendencias, error } = await window.db
-            .from('girias')
+    async function gerenciarPopupNovidades() {
+        const { data: novidades, error } = await window.db
+            .from('plataforma_novidades')
             .select('*')
-            .eq('status', 'aprovado')
-            .order('acessos', { ascending: false, nullsFirst: false })
-            .limit(5); 
-            
-        if (error) {
-            console.error("Erro ao buscar tendências:", error);
-            tendenciasContainer.innerHTML = '<p>Não foi possível carregar as tendências.</p>';
-            return;
-        }
-        renderGiriasList(tendenciasContainer, tendencias);
-    }
-    
-    if(closeButton) closeButton.addEventListener('click', () => giriaModal.style.display = 'none');
-    window.addEventListener('click', (event) => {
-        if (event.target === giriaModal) giriaModal.style.display = 'none';
-    });
+            .eq('status', 'publicado')
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-    // --- BUSCA INTELIGENTE ---
+        if (error || !novidades || novidades.length === 0) return;
+
+        const ultimaNovidade = novidades[0];
+        const lastSeenId = localStorage.getItem('seen_news_id');
+
+        if (lastSeenId !== ultimaNovidade.id.toString()) {
+            const iconEl = document.getElementById('popup-icon');
+            const titleEl = document.getElementById('popup-title');
+            const descEl = document.getElementById('popup-desc');
+
+            if(iconEl) iconEl.innerText = ultimaNovidade.icone || '🚀';
+            if(titleEl) titleEl.innerText = ultimaNovidade.titulo;
+            if(descEl) descEl.innerText = ultimaNovidade.descricao;
+            
+            window.currentNewsId = ultimaNovidade.id;
+
+            setTimeout(() => {
+                const popup = document.getElementById('popup-news');
+                if (popup) popup.style.display = 'flex';
+            }, 2500);
+        }
+    }
+
+    // Tornando as funções do Popup globais para o onclick no HTML
+    window.fecharPopup = () => { document.getElementById('popup-news').style.display = 'none'; };
+    window.marcarComoVisto = () => {
+        if (window.currentNewsId) localStorage.setItem('seen_news_id', window.currentNewsId.toString());
+        window.fecharPopup();
+    };
+
+    // ============================================================
+    // ⌨️ BUSCA E FORMULÁRIOS
+    // ============================================================
+
     if (searchInput) {
         let debounceTimer;
-
         searchInput.addEventListener('input', function() {
             clearTimeout(debounceTimer);
             const val = this.value.trim();
-
-            if (val.length < 2) {
-                if(suggestionsContainer) suggestionsContainer.style.display = 'none';
-                return;
-            }
+            if (val.length < 2) { if(suggestionsContainer) suggestionsContainer.style.display = 'none'; return; }
 
             debounceTimer = setTimeout(async () => {
-                // AJUSTE: Usa window.db
-                const { data, error } = await window.db
-                    .from('girias')
-                    .select('nome, significado, categoria')
-                    .eq('status', 'aprovado')
-                    .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`)
-                    .limit(5);
+                const { data } = await window.db.from('girias')
+                    .select('nome, significado').eq('status', 'aprovado')
+                    .or(`nome.ilike.%${val}%,significado.ilike.%${val}%`).limit(5);
 
-                if (data && data.length > 0 && suggestionsContainer) {
+                if (data && data.length > 0) {
                     suggestionsContainer.innerHTML = '';
                     suggestionsContainer.style.display = 'block';
-
                     data.forEach(g => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
-                        div.innerHTML = `
-                            <div style="display:flex; justify-content:space-between;">
-                                <strong>${g.nome}</strong>
-                                <span style="font-size:0.8em; background:#eee; padding:2px 5px; border-radius:3px;">${g.categoria}</span>
-                            </div>
-                            <em style="font-size:0.9em; color:#666; display:block;">${g.significado.substring(0, 50)}...</em>
-                        `;
-                        div.onclick = () => {
-                            const link = slugify(g.nome);
-                            window.location.href = `/giria.html?slug=${link}`;
-                        };
-                        suggestionsContainer.appendChild(div);
+                        const d = document.createElement('div');
+                        d.className = 'suggestion-item';
+                        d.innerHTML = `<strong>${g.nome}</strong> - <small>${g.significado.substring(0,30)}...</small>`;
+                        d.onclick = () => window.location.href = `/giria.html?slug=${slugify(g.nome)}`;
+                        suggestionsContainer.appendChild(d);
                     });
-                } else {
-                    if(suggestionsContainer) suggestionsContainer.style.display = 'none';
-                }
+                } else if(suggestionsContainer) { suggestionsContainer.style.display = 'none'; }
             }, 300);
         });
-
-        document.addEventListener('click', (e) => {
-            if (e.target !== searchInput && suggestionsContainer) {
-                suggestionsContainer.style.display = 'none';
-            }
-        });
-
-        if (searchButton) {
-            searchButton.addEventListener('click', () => {
-                const val = searchInput.value.trim();
-                if(val) window.location.href = `/giria.html?slug=${slugify(val)}`;
-            });
-        }
-        
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const val = searchInput.value.trim();
-                if(val) window.location.href = `/giria.html?slug=${slugify(val)}`;
-            }
-        });
     }
 
-    if (addGiriaForm) {
-        addGiriaForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            formMessage.textContent = 'Enviando...';
-            
-            // Cria objeto da nova gíria (status será pendente por padrão no banco)
-            const newGiriaData = {
-                nome: document.getElementById('giria-nome').value,
-                significado: document.getElementById('giria-significado').value,
-                categoria: document.getElementById('giria-categoria').value
-            };
-
-            const newGiria = await saveNewGiria(newGiriaData);
-            
-            if (newGiria) {
-                addGiriaForm.reset();
-                formMessage.style.color = 'green';
-                formMessage.textContent = 'Gíria enviada para aprovação!';
-                // Não chama initializePage() para não recarregar tudo, apenas limpa
-            } else {
-                // Se saveNewGiria retornou null, já logou o erro
-                formMessage.style.color = 'red';
-                formMessage.textContent = 'Erro ao enviar. Tente novamente.';
-            }
-            setTimeout(() => formMessage.textContent = '', 3000);
-        });
-    }
-
-    if (categoryList) {
-        categoryList.addEventListener('click', (e) => {
-            if (e.target.tagName === 'LI') {
-                const category = e.target.dataset.category.toLowerCase();
-                const filteredGirias = giriasCache.filter(giria => giria.categoria.toLowerCase().replace('+', 'p').includes(category));
-                document.getElementById('destaques').querySelector('h2').textContent = `Gírias da Categoria: ${e.target.textContent}`;
-                giriasAleatorias = filteredGirias;
-                currentPage = 1;
-                renderGiriasPaginadas();
-            }
-        });
-    }
-    
-    if (prevButton) prevButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderGiriasPaginadas();
-        }
-    });
-    if (nextButton) nextButton.addEventListener('click', () => {
-        const maxPage = Math.ceil(giriasAleatorias.length / itemsPerPage);
-        if (currentPage < maxPage) {
-            currentPage++;
-            renderGiriasPaginadas();
-        }
-    });
-    if (refreshButton) refreshButton.addEventListener('click', () => {
-        document.getElementById('destaques').querySelector('h2').textContent = "Gírias Aleatórias 🎲";
-        giriasAleatorias = shuffleArray(giriasCache);
-        currentPage = 1;
-        renderGiriasPaginadas();
-    });
+    // ============================================================
+    // 🚀 INICIALIZAÇÃO
+    // ============================================================
 
     async function initializePage() {
-        if(giriasDestaqueContainer) giriasDestaqueContainer.innerHTML = '<p>Carregando gírias...</p>';
         await fetchAllGirias();
-        if(giriasDestaqueContainer) {
-            giriasAleatorias = shuffleArray(giriasCache);
-            currentPage = 1;
+        
+        if (giriasDestaqueContainer) {
+            giriasAleatorias = [...giriasCache].sort(() => 0.5 - Math.random());
             renderGiriasPaginadas();
         }
-        displayGiriasCount();
+
+        if (giriasCountElement) giriasCountElement.textContent = giriasCache.length;
         displayGiriaDoDia();
         displayTendencias();
+        carregarPostsPublicos();
+        gerenciarPopupNovidades();
     }
-    
+
+    const refreshBtn = document.getElementById('refresh-button');
+    if(refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            refreshBtn.textContent = 'Buscando...';
+            await fetchAllGirias(true); 
+            location.reload(); 
+        });
+    }
+
+    document.getElementById('next-button')?.addEventListener('click', () => { currentPage++; renderGiriasPaginadas(); });
+    document.getElementById('prev-button')?.addEventListener('click', () => { currentPage--; renderGiriasPaginadas(); });
+
     initializePage();
 });
+
+// Registro de Service Worker para Modo Offline
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
+    });
+}

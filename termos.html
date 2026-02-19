@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D2D44">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termos de Uso - Gíria Online!</title>
@@ -17,6 +19,7 @@
                 <li><a href="/#sobre">Sobre</a></li>
                 <li><a href="/blog.html">Blog</a></li> 
                 <li><a href="/#contato">Contato</a></li>
+            
             </ul>
         </nav>
     </header> 
@@ -64,12 +67,19 @@
         </main>
     </div>
 
-    <footer style="text-align: center;">
-        <p>&copy; 2025 Gíria Online! - Todos os direitos reservados.</p>
-        <div style="font-size: 0.85em; margin-top: 10px; opacity: 0.7;">
-            <span style="color: #fff; font-weight: bold;">Termos de Uso</span> | 
-            <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a>
-        </div>
-    </footer>
-</body>
+<footer style="text-align: center;">
+    <p>&copy; 2026 Gíria Online! - Todos os direitos reservados.</p>
+    <div style="font-size: 0.85em; margin-top: 10px; opacity: 0.7;">
+        <a href="/privacidade.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Política de Privacidade</a> | 
+    <a href="/novidades.html" style="color: inherit; text-decoration: none; margin: 0 5px;">Novidades</a>
+    </div>
+</footer>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+</script>
+ </body>
 </html>

@@ -1,0 +1,21 @@
+{
+  "name": "Gíria Online!",
+  "short_name": "GíriaOnline",
+  "description": "Dicionário colaborativo de gírias brasileiras.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d131c",
+  "theme_color": "#1D2D44",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192.png?text=GO!", 
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512.png?text=GO!",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
